@@ -1,0 +1,4 @@
+numpy          # For array manipulations and linear algebra
+scipy          # For reading/writing .wav files and signal processing
+PyWavelets     # The core library for Wavelet Transforms (DWT/CWT)
+matplotlib     # For generating the plots and charts

@@ -1,0 +1,1 @@
+#Determine which coefficients of waves stay and which are removed

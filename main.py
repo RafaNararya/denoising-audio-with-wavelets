@@ -1,5 +1,8 @@
 import os
 from src.helper import load_audio, save_audio, add_white_noise
+import matplotlib.pyplot as plt
+import pywt
+import numpy as np
 
 def main():
     input_file = "data/raw/clean_sample.wav"
@@ -15,7 +18,17 @@ def main():
     save_audio(noisy_out, fs, noisy_data)
     print(f"Noisy test file is made at {noisy_out}")
 
-    denoised_data = noisy_data
+    # Decompose the signal
+    wavelet_type = 'db4'
+    decomposed_coeffs = pywt.wavedec(noisy_data, wavelet_type, level=4)
+    
+    # Denoise signal
+    for i in range(2, len(decomposed_coeffs)):
+        decomposed_coeffs[i] = pywt.threshold(decomposed_coeffs[i], 0.1, 'soft')
+    
+    # Reconstruct signal
+    denoised_data = pywt.waverec(decomposed_coeffs, wavelet_type)
+    
     save_audio(processed_out, fs, denoised_data)
     print(f"Saved cleaned audio to {processed_out}")
 

@@ -27,9 +27,29 @@ def main():
 
     # Decompose the signal
     wavelet_type = 'db8'
-    decomposed_coeffs = pywt.wavedec(noisy_data, wavelet_type, level=5)
+    level = 5
+    decomposed_coeffs = pywt.wavedec(noisy_data, wavelet_type, level=level)
 
-    sigma = np.median(np.abs(decomposed_coeffs[-1])) / .6745
+    denoised_coeffs = [decomposed_coeffs[0]]
+    n = len(noisy_data)
+    for i in range(1, len(decomposed_coeffs)):
+        level_sigma = np.median(np.abs(decomposed_coeffs[i])) / .6745
+        threshold_value = level_sigma * np.sqrt(2 * np.log(n))
+        scale_factor = .15 + (i / len(decomposed_coeffs)) * .35
+        applied_thresh = threshold_value * scale_factor
+        denoised_coeffs.append(pywt.threshold(decomposed_coeffs[i], value=applied_thresh))
+    
+    denoised_data = pywt.waverec(denoised_coeffs, wavelet_type)
+
+    if len(denoised_data) > len(clean_data):
+        denoised_data = denoised_data[:len(clean_data)]
+
+    print(f"Noisy SNR = {snr(clean_data, noisy_data):.2f} dB")
+    print(f"Denoised SNR = {snr(clean_data, denoised_data):.2f} dB")
+
+    save_audio(processed_out, fs, denoised_data)
+
+    '''sigma = np.median(np.abs(decomposed_coeffs[-1])) / .6745
     threshold_value  = sigma * np.sqrt(2 * np.log(len(noisy_data)))
     denoised_coeffs = [decomposed_coeffs[0]]
     for i in range(1, len(decomposed_coeffs)):
@@ -44,7 +64,7 @@ def main():
     print(f"Denoised SNR = {snr(clean_data, denoised_data)} dB")
 
     save_audio(processed_out, fs, denoised_data)
-    print(f"Saved cleaned audio to {processed_out}")
+    print(f"Saved cleaned audio to {processed_out}")'''
 
 
 

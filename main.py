@@ -1,9 +1,11 @@
 import os
-from src.helper import load_audio, save_audio, add_white_noise
+from src.helper import load_audio, save_audio, add_white_noise, add_image_noise, load_image, save_image
 from src.thresholding import threshold
 import matplotlib.pyplot as plt
 import pywt
 import numpy as np
+import cv2
+from src.transform_logic import dwt2d_mra, apply_threshold, idwt2d_mra
 
 def snr(clean, noisy):
     noise = noisy - clean
@@ -96,6 +98,34 @@ def main():
     plt.ylabel("Frequency (Hz)")
     plt.xlabel("Time (s)")
     plt.savefig(f"{plot_dir}/spectrogram_denoised.png")
+
+
+
+
+
+
+
+
+
+    #Image Denoising things
+    image_path = "data/raw/butterfly.png"
+    final_save_image_path = "data/processed/clean_butterfly.png"
+    noisy_image_path = "data/raw/noisy_butterfly.png"
+    if not(os.path.exists(image_path)):
+        print(f"Image file is missing at {image_path}")
+        return
+
+    clean_image = load_image(image_path)
+    noisy_image = add_image_noise(clean_image)
+    save_image("data/raw/grey_scale_butterfly.png", clean_image)
+    save_image(noisy_image_path, noisy_image)
+
+    image_coeffs = dwt2d_mra(noisy_image, wavelet="db4", level=2)
+    denoised_image_coeffs = apply_threshold(image_coeffs, value=.09)
+    reconstructed_image = idwt2d_mra(denoised_image_coeffs, wavelet="db4")
+
+    
+    save_image(final_save_image_path, reconstructed_image)
 
 if __name__ == "__main__":
     main()
